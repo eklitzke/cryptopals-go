@@ -7,6 +7,8 @@ import (
 	"math"
 )
 
+// SearchSingleByteXOR searches a list of lines from a reader, and finds the
+// line encrypted using a single byte XOR cipher.
 func SearchSingleByteXOR(r io.Reader) (string, error) {
 	scanner := bufio.NewScanner(r)
 	bestError := math.MaxFloat64
