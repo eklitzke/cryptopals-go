@@ -2,6 +2,7 @@ package cryptopals
 
 import (
 	"encoding/hex"
+	"errors"
 	"math"
 	"unicode"
 )
@@ -65,12 +66,13 @@ func squaredRuneFrequencyError(in map[rune]float64) float64 {
 
 // SingleByteXOR cracks an input cipher string (which is hex-encoded) that has
 // been encrypted using a single byte XOR scheme.
-func SingleByteXOR(cipher string) (key byte, plaintext string, err error) {
+func SingleByteXOR(cipher string) (key byte, diff float64, plaintext string, err error) {
 	var data []byte
 	data, err = hex.DecodeString(cipher)
 	if err != nil {
 		return
 	}
+	var found bool
 	var bestKey byte
 	bestError := math.MaxFloat64
 
@@ -80,7 +82,7 @@ outer:
 		key = byte(i)
 		for _, r := range data {
 			outr := rune(key ^ r)
-			if !unicode.IsPrint(outr) {
+			if !unicode.IsPrint(outr) && !unicode.IsSpace(outr) {
 				// shortcut if the output produces non-printable
 				// characters
 				continue outer
@@ -94,8 +96,14 @@ outer:
 			bestError = error
 			bestKey = key
 			plaintext = plain
+			found = true
 		}
 	}
+	if !found {
+		err = errors.New("no candidates found")
+		return
+	}
+	diff = bestError
 	key = bestKey
 	return
 }
