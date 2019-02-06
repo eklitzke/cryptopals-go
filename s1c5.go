@@ -4,7 +4,7 @@ import "errors"
 
 // EncryptRepeatingXOR encrypts a string against a key by repeatedly XORing the
 // text.
-func EncryptRepeatingXOR(input, key string) (out []byte, err error) {
+func EncryptRepeatingXOR(input, key []byte) (out []byte, err error) {
 	keyLen := len(key)
 	if len(input) < keyLen {
 		err = errors.New("cannot encrypt text shorter than key")

@@ -6,12 +6,14 @@ import (
 )
 
 func TestS1C4(t *testing.T) {
-	file, err := os.Open("challenge-data/4.txt")
+	f, err := os.Open("challenge-data/4.txt")
 	if err != nil {
 		t.Errorf("failed to open file: %v\n", err)
 	}
+	defer f.Close()
+
 	const expected = "Now that the party is jumping\n"
-	output, err := SearchSingleByteXOR(file)
+	output, err := SearchSingleByteXOR(f)
 	if err != nil {
 		t.Errorf("error from SearchSingleByteXOR: %v", err)
 	}

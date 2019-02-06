@@ -72,6 +72,10 @@ func SingleByteXOR(cipher string) (key byte, diff float64, plaintext string, err
 	if err != nil {
 		return
 	}
+	return solveSingleByteXor(data)
+}
+
+func solveSingleByteXor(data []byte) (key byte, diff float64, plaintext string, err error) {
 	var found bool
 	var bestKey byte
 	bestError := math.MaxFloat64
