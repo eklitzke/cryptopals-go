@@ -26,10 +26,7 @@ import (
 func TestS1C7(t *testing.T) {
 	const key = "YELLOW SUBMARINE"
 
-	data, err := DecodeBase64File("challenge-data/7.txt")
-	if err != nil {
-		t.Error(err)
-	}
+	data := DecodeBase64File(t, "challenge-data/7.txt")
 	decrypted, err := cryptopals.DecryptAESECB(data, []byte(key))
 	if err != nil {
 		t.Error(err)

@@ -31,10 +31,7 @@ func TestS1C6(t *testing.T) {
 		t.Errorf("expected hamming distance %d, got %d", expectedDist, dist)
 	}
 
-	data, err := DecodeBase64File("challenge-data/6.txt")
-	if err != nil {
-		t.Error(err)
-	}
+	data := DecodeBase64File(t, "challenge-data/6.txt")
 	_, plain, err := cryptopals.BreakRepeatingKeyXOR(data, cryptopals.BreakOpts{})
 	if err != nil {
 		t.Error(err)

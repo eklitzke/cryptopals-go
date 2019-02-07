@@ -16,27 +16,26 @@
 package cryptopals_test
 
 import (
-	"bufio"
+	"bytes"
 	"encoding/base64"
 	"io/ioutil"
-	"os"
-	"strings"
+	"testing"
 )
 
-func DecodeBase64File(fileName string) ([]byte, error) {
-	f, err := os.Open(fileName)
+// DecodeBase64File reads a base64 encoded file, and returns the decoded
+// representation.
+func DecodeBase64File(t *testing.T, fileName string) []byte {
+	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return nil, err
+		t.Errorf("failed to read file %s: %v", fileName, err)
+		return nil
 	}
-	defer f.Close()
-
-	var data string
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		data += strings.TrimSpace(scanner.Text())
-	}
-
-	r := strings.NewReader(data)
+	r := bytes.NewReader(data)
 	enc := base64.NewDecoder(base64.StdEncoding, r)
-	return ioutil.ReadAll(enc)
+	data, err = ioutil.ReadAll(enc)
+	if err != nil {
+		t.Errorf("failed to base64 decode file %s: %v", fileName, err)
+		return nil
+	}
+	return data
 }

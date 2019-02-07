@@ -47,10 +47,7 @@ func AESZeroBytes() []byte {
 func TestS2C10(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
 
-	data, err := DecodeBase64File("challenge-data/10.txt")
-	if err != nil {
-		t.Error(err)
-	}
+	data := DecodeBase64File(t, "challenge-data/10.txt")
 	iv := AESZeroBytes()
 	decrypted, err := cryptopals.DecryptAESCBC(data, key, iv)
 	if err != nil {
