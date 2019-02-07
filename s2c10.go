@@ -15,43 +15,30 @@
 
 package cryptopals
 
-import (
-	"encoding/hex"
-	"fmt"
-)
+import "crypto/aes"
 
-// FixedXOR computes the fixed XOR of two byte arrays.
-func FixedXOR(a, b []byte) ([]byte, error) {
-	if len(a) != len(b) {
-		return nil, fmt.Errorf("inputs have mismatched sizes %d and %d", len(a), len(b))
-
-	}
-	var outb []byte
-	for i, ab := range a {
-		bb := b[i]
-		outb = append(outb, ab^bb)
-	}
-	return outb, nil
-}
-
-// FixedXORHexString takes two equal-length hex strings and produces their
-// hex-encoded XOR combination.
-func FixedXORHexString(hexl, hexr string) (out string, err error) {
-	var l, r []byte
-	l, err = hex.DecodeString(hexl)
+func DecryptAESCBC(data, key, iv []byte) (out []byte, err error) {
+	scanner, err := NewBlockScanner(data, AESBlockSize)
 	if err != nil {
-		return
-	}
-	r, err = hex.DecodeString(hexr)
-	if err != nil {
-		return
+		return nil, err
 	}
 
-	var bytes []byte
-	bytes, err = FixedXOR(l, r)
+	block, err := aes.NewCipher(key)
 	if err != nil {
-		return
+		return nil, err
 	}
-	out = hex.EncodeToString(bytes)
+	dec := NewECBDecrypter(block)
+
+	dst := make([]byte, AESBlockSize)
+	for scanner.Scan() {
+		chunk := scanner.Bytes()
+		dec.CryptBlocks(dst, chunk)
+		dst, err = FixedXOR(dst, iv)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, dst...)
+		iv = chunk
+	}
 	return
 }

@@ -13,45 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals
+package cryptopals_test
 
 import (
-	"encoding/hex"
-	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/eklitzke/cryptopals"
 )
 
-// FixedXOR computes the fixed XOR of two byte arrays.
-func FixedXOR(a, b []byte) ([]byte, error) {
-	if len(a) != len(b) {
-		return nil, fmt.Errorf("inputs have mismatched sizes %d and %d", len(a), len(b))
+func TestS2C10(t *testing.T) {
+	const key = "YELLOW SUBMARINE"
 
-	}
-	var outb []byte
-	for i, ab := range a {
-		bb := b[i]
-		outb = append(outb, ab^bb)
-	}
-	return outb, nil
-}
-
-// FixedXORHexString takes two equal-length hex strings and produces their
-// hex-encoded XOR combination.
-func FixedXORHexString(hexl, hexr string) (out string, err error) {
-	var l, r []byte
-	l, err = hex.DecodeString(hexl)
+	data, err := cryptopals.DecodeBase64File("challenge-data/10.txt")
 	if err != nil {
-		return
+		t.Error(err)
 	}
-	r, err = hex.DecodeString(hexr)
+	iv := make([]byte, cryptopals.AESBlockSize)
+	decrypted, err := cryptopals.DecryptAESCBC(data, []byte(key), iv)
 	if err != nil {
-		return
+		t.Error(err)
 	}
-
-	var bytes []byte
-	bytes, err = FixedXOR(l, r)
-	if err != nil {
-		return
+	plaintext := string(decrypted)
+	if !strings.Contains(plaintext, "go white boy go") {
+		t.Errorf("failed to decrypt string")
 	}
-	out = hex.EncodeToString(bytes)
-	return
 }
