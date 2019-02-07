@@ -17,15 +17,6 @@ package cryptopals
 
 import "errors"
 
-// EncryptionMode represents an AES encryption mode (ECB, CBC, etc.)
-type EncryptionMode int
-
-// List of EncryptionMode values.
-const (
-	ECB EncryptionMode = iota + 1
-	CBC
-)
-
 // buffers smaller than this cannot be detected accurately
 const MinOracleDetectionSize = 1000
 

@@ -17,8 +17,6 @@ package cryptopals
 
 import "crypto/sha1"
 
-const AESBlockSize = 16
-
 func CountRepeats(data []byte, blockSize int) (int, error) {
 	scanner, err := NewBlockScanner(data, blockSize)
 	if err != nil {
