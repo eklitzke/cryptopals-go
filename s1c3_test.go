@@ -1,11 +1,15 @@
-package cryptopals
+package cryptopals_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/eklitzke/cryptopals"
+)
 
 func TestS1C3(t *testing.T) {
 	const input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 	const expected = "Cooking MC's like a pound of bacon"
-	_, _, output, err := SingleByteXOR(input)
+	_, _, output, err := cryptopals.SingleByteXOR(input)
 	if err != nil {
 		t.Errorf("error from SingleByteXOR: %v", err)
 	}

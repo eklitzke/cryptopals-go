@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func decodeBase64File(fileName string) ([]byte, error) {
+func DecodeBase64File(fileName string) ([]byte, error) {
 	f, err := os.Open(fileName)
 	if err != nil {
 		return nil, err

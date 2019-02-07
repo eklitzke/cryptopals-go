@@ -1,11 +1,15 @@
-package cryptopals
+package cryptopals_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/eklitzke/cryptopals"
+)
 
 func TestS1C1(t *testing.T) {
 	const input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	const expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
-	output, err := HexToBase64(input)
+	output, err := cryptopals.HexToBase64(input)
 	if err != nil {
 		t.Errorf("error from HexToBase64: %v", err)
 	}

@@ -6,13 +6,13 @@ import (
 	"sort"
 )
 
-type breakOpts struct {
+type BreakOpts struct {
 	minKey int
 	maxKey int
 	search int
 }
 
-func (b breakOpts) fillDefaults() breakOpts {
+func (b BreakOpts) fillDefaults() BreakOpts {
 	opts := b
 	if opts.minKey == 0 {
 		opts.minKey = 2
@@ -92,7 +92,7 @@ func (s byError) Len() int           { return len(s) }
 func (s byError) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s byError) Less(i, j int) bool { return s[i].error < s[j].error }
 
-func BreakRepeatingKeyXOR(s []byte, opts breakOpts) ([]byte, string, error) {
+func BreakRepeatingKeyXOR(s []byte, opts BreakOpts) ([]byte, string, error) {
 	opts = opts.fillDefaults()
 	var candidates []keyCandidate
 	for keySize := opts.minKey; keySize <= opts.maxKey; keySize++ {

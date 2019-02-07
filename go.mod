@@ -1,1 +1,1 @@
-module github.com/eklitzke/cryptopals/go
+module github.com/eklitzke/cryptopals

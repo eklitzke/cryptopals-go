@@ -1,18 +1,20 @@
-package cryptopals
+package cryptopals_test
 
 import (
 	"strings"
 	"testing"
+
+	"github.com/eklitzke/cryptopals"
 )
 
 func TestS1C7(t *testing.T) {
 	const key = "YELLOW SUBMARINE"
 
-	data, err := decodeBase64File("challenge-data/7.txt")
+	data, err := cryptopals.DecodeBase64File("challenge-data/7.txt")
 	if err != nil {
 		t.Error(err)
 	}
-	bytes, err := DecryptAESECB(data, []byte(key))
+	bytes, err := cryptopals.DecryptAESECB(data, []byte(key))
 	if err != nil {
 		t.Error(err)
 	}
