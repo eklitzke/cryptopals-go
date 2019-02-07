@@ -13,38 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
-import (
-	"bufio"
-	"encoding/hex"
-	"os"
-	"testing"
-
-	"github.com/eklitzke/cryptopals"
-)
-
-func TestS1C8(t *testing.T) {
-	f, err := os.Open("challenge-data/8.txt")
-	if err != nil {
-		t.Error(err)
+// pad a buffer using PKCS#7
+func PadPKCS7(data []byte, blockSize int) []byte {
+	padded := data
+	extra := blockSize - (len(data) % blockSize)
+	for i := 0; i < extra; i++ {
+		padded = append(padded, byte(extra))
 	}
-	defer f.Close()
+	return padded
+}
 
-	var ciphers [][]byte // a list of the decoded ciphers
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		bytes, err := hex.DecodeString(scanner.Text())
-		if err != nil {
-			t.Error(err)
-			break
+func UnpadPKCS7(data []byte) []byte {
+	if len(data) == 0 {
+		return data
+	}
+	lastByte := data[len(data)-1]
+	for i := 1; byte(i) < lastByte; i++ {
+		if data[len(data)-1-i] != lastByte {
+			return data // the data is not padded
 		}
-		ciphers = append(ciphers, bytes)
 	}
 
-	const aesECBModeCipherCount = 4
-	_, repeats := cryptopals.DetectAESECBMode(ciphers)
-	if repeats != aesECBModeCipherCount {
-		t.Errorf("failed to find repeats")
-	}
+	return data[:len(data)-int(lastByte)]
 }

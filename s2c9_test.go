@@ -16,35 +16,22 @@
 package cryptopals_test
 
 import (
-	"bufio"
-	"encoding/hex"
-	"os"
+	"bytes"
 	"testing"
 
 	"github.com/eklitzke/cryptopals"
 )
 
-func TestS1C8(t *testing.T) {
-	f, err := os.Open("challenge-data/8.txt")
-	if err != nil {
-		t.Error(err)
-	}
-	defer f.Close()
-
-	var ciphers [][]byte // a list of the decoded ciphers
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		bytes, err := hex.DecodeString(scanner.Text())
-		if err != nil {
-			t.Error(err)
-			break
-		}
-		ciphers = append(ciphers, bytes)
+func TestS2C9(t *testing.T) {
+	const input = "YELLOW SUBMARINE"
+	const expected = "YELLOW SUBMARINE\x04\x04\x04\x04"
+	out := cryptopals.PadPKCS7([]byte(input), 20)
+	if !bytes.Equal(out, []byte(expected)) {
+		t.Errorf("expected %v, got %v", expected, out)
 	}
 
-	const aesECBModeCipherCount = 4
-	_, repeats := cryptopals.DetectAESECBMode(ciphers)
-	if repeats != aesECBModeCipherCount {
-		t.Errorf("failed to find repeats")
+	unpadded := cryptopals.UnpadPKCS7(out)
+	if !bytes.Equal(unpadded, []byte(input)) {
+		t.Errorf("expected %v, got %v", input, unpadded)
 	}
 }
