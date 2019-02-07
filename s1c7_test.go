@@ -26,7 +26,7 @@ import (
 func TestS1C7(t *testing.T) {
 	const key = "YELLOW SUBMARINE"
 
-	data, err := cryptopals.DecodeBase64File("challenge-data/7.txt")
+	data, err := DecodeBase64File("challenge-data/7.txt")
 	if err != nil {
 		t.Error(err)
 	}
