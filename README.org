@@ -1,5 +1,10 @@
-These are my Go solutions to [[https://cryptopals.com/][the cryptopals challenges]]. To run the challenges,
-use =go test -v=:
+These are my Go solutions to [[https://cryptopals.com/][the cryptopals challenges]]. The solution to each
+problem is split between a file named =SXCY.go=, and a test case named
+=SXCY_test.go=, where the values of =X= and =Y= correspond to the set and
+challenge number. For example, the solution to Set 2 Challenge 9 is found in the
+files =s2c9.go= and =s2c9_test.go=.
+
+To run all test cases use =go test -v= or =make=:
 
 #+BEGIN_SRC bash
 # Run tests
