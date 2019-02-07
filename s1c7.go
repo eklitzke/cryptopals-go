@@ -17,6 +17,17 @@ package cryptopals
 
 import "crypto/aes"
 
+func EncryptAESECB(data, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	enc := NewECBEncrypter(block)
+	dst := make([]byte, len(data))
+	enc.CryptBlocks(dst, data)
+	return dst, nil
+}
+
 func DecryptAESECB(data []byte, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {

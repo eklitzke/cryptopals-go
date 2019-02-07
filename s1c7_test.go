@@ -16,6 +16,7 @@
 package cryptopals_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -29,11 +30,20 @@ func TestS1C7(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	bytes, err := cryptopals.DecryptAESECB(data, []byte(key))
+	decrypted, err := cryptopals.DecryptAESECB(data, []byte(key))
 	if err != nil {
 		t.Error(err)
 	}
-	if !strings.Contains(string(bytes), "Play that funky music") {
-		t.Errorf("bad plaintext: %s\n", string(bytes))
+	plaintext := string(decrypted)
+	if !strings.Contains(plaintext, "Play that funky music") {
+		t.Errorf("bad plaintext: %s\n", plaintext)
+	}
+
+	encrypted, err := cryptopals.EncryptAESECB(decrypted, []byte(key))
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(encrypted, data) {
+		t.Errorf("encrypt failed")
 	}
 }
