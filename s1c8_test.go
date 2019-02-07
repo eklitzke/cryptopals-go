@@ -43,7 +43,10 @@ func TestS1C8(t *testing.T) {
 	}
 
 	const aesECBModeCipherCount = 4
-	_, repeats := cryptopals.DetectAESECBMode(ciphers)
+	_, repeats, err := cryptopals.DetectAESECBMode(ciphers)
+	if err != nil {
+		t.Error(err)
+	}
 	if repeats != aesECBModeCipherCount {
 		t.Errorf("failed to find repeats")
 	}

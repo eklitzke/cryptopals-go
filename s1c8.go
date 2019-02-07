@@ -15,23 +15,47 @@
 
 package cryptopals
 
+import "crypto/sha1"
+
 const AESBlockSize = 16
 
-func DetectAESECBMode(ciphers [][]byte) ([]byte, int) {
+func CountRepeats(data []byte, blockSize int) (int, error) {
+	scanner, err := NewBlockScanner(data, blockSize)
+	if err != nil {
+		return -1, err
+	}
+	blockCounts := make(map[[sha1.Size]byte]int)
+	for scanner.Scan() {
+		block := scanner.Bytes()
+		sum := sha1.Sum(block)
+		blockCounts[sum] = blockCounts[sum] + 1
+	}
+
+	bestRepeats := 0
+	for _, v := range blockCounts {
+		if v > bestRepeats {
+			bestRepeats = v
+		}
+	}
+	return bestRepeats, nil
+}
+
+func CountAESRepeats(data []byte) (int, error) {
+	return CountRepeats(data, AESBlockSize)
+}
+
+func DetectAESECBMode(ciphers [][]byte) ([]byte, int, error) {
 	var bestCipher []byte
 	bestRepeats := 0
 	for _, cipher := range ciphers {
-		chunkMap := make(map[string]int)
-		for i := 0; i < len(cipher); i += AESBlockSize {
-			chunk := string(cipher[i : i+AESBlockSize])
-			chunkMap[chunk] = chunkMap[chunk] + 1
+		repeats, err := CountAESRepeats(cipher)
+		if err != nil {
+			return nil, 0, err
 		}
-		for _, v := range chunkMap {
-			if v > bestRepeats {
-				bestRepeats = v
-				bestCipher = cipher
-			}
+		if repeats > bestRepeats {
+			bestCipher = cipher
+			bestRepeats = repeats
 		}
 	}
-	return bestCipher, bestRepeats
+	return bestCipher, bestRepeats, nil
 }
