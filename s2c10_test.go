@@ -16,33 +16,11 @@
 package cryptopals_test
 
 import (
-	"crypto/rand"
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/eklitzke/cryptopals"
 )
-
-func RandomBytes(size int) []byte {
-	buf := make([]byte, size)
-	if _, err := rand.Read(buf); err != nil {
-		panic(fmt.Sprintf("failed to read random bytes: %v", err))
-	}
-	return buf
-}
-
-func ZeroBytes(size int) []byte {
-	return make([]byte, size)
-}
-
-func AESRandomBytes() []byte {
-	return RandomBytes(cryptopals.AESBlockSize)
-}
-
-func AESZeroBytes() []byte {
-	return ZeroBytes(cryptopals.AESBlockSize)
-}
 
 func TestS2C10(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
@@ -69,7 +47,6 @@ func TestS2C10(t *testing.T) {
 	}
 	plaintext2 := string(decrypted)
 	if plaintext1 != plaintext2 {
-		//t.Errorf("strings are not equal: %s", plaintext2)
 		t.Errorf("strings are not equal")
 	}
 }

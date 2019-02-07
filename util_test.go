@@ -17,9 +17,13 @@ package cryptopals_test
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"testing"
+
+	"github.com/eklitzke/cryptopals"
 )
 
 // DecodeBase64File reads a base64 encoded file, and returns the decoded
@@ -39,3 +43,23 @@ func DecodeBase64File(t *testing.T, fileName string) []byte {
 	}
 	return data
 }
+
+// Generate a buffer with random bytes.
+func RandomBytes(size int) []byte {
+	buf := make([]byte, size)
+	if _, err := rand.Read(buf); err != nil {
+		panic(fmt.Sprintf("failed to read random bytes: %v", err))
+	}
+	return buf
+}
+
+// Generate a buffer with zero bytes.
+func ZeroBytes(size int) []byte {
+	return make([]byte, size)
+}
+
+// Wrapper for RandomBytes using AESBlockSize
+func AESRandomBytes() []byte { return RandomBytes(cryptopals.AESBlockSize) }
+
+// Wrapper for ZeroBytes using AESBlockSize
+func AESZeroBytes() []byte { return ZeroBytes(cryptopals.AESBlockSize) }
