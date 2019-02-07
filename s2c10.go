@@ -15,8 +15,38 @@
 
 package cryptopals
 
-import "crypto/aes"
+import (
+	"crypto/aes"
+)
 
+// Encrypt data using AES in CBC mode, given a key and IV.
+func EncryptAESCBC(data, key, iv []byte) (out []byte, err error) {
+	scanner, err := NewBlockScanner(data, AESBlockSize)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	enc := NewECBEncrypter(block)
+	dst := make([]byte, AESBlockSize)
+	for scanner.Scan() {
+		chunk := scanner.Bytes()
+		chunk, err = FixedXOR(chunk, iv)
+		if err != nil {
+			return
+		}
+		enc.CryptBlocks(dst, chunk)
+
+		out = append(out, dst...)
+		iv = dst
+	}
+	return
+}
+
+// Decrypt data using AES in CBC mode, given a key and IV.
 func DecryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 	scanner, err := NewBlockScanner(data, AESBlockSize)
 	if err != nil {

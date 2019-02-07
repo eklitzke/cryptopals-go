@@ -16,26 +16,63 @@
 package cryptopals_test
 
 import (
+	"crypto/rand"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/eklitzke/cryptopals"
 )
 
+func RandomBytes(size int) []byte {
+	buf := make([]byte, size)
+	if _, err := rand.Read(buf); err != nil {
+		panic(fmt.Sprintf("failed to read random bytes: %v", err))
+	}
+	return buf
+}
+
+func ZeroBytes(size int) []byte {
+	return make([]byte, size)
+}
+
+func AESRandomBytes() []byte {
+	return RandomBytes(cryptopals.AESBlockSize)
+}
+
+func AESZeroBytes() []byte {
+	return ZeroBytes(cryptopals.AESBlockSize)
+}
+
 func TestS2C10(t *testing.T) {
-	const key = "YELLOW SUBMARINE"
+	key := []byte("YELLOW SUBMARINE")
 
 	data, err := cryptopals.DecodeBase64File("challenge-data/10.txt")
 	if err != nil {
 		t.Error(err)
 	}
-	iv := make([]byte, cryptopals.AESBlockSize)
-	decrypted, err := cryptopals.DecryptAESCBC(data, []byte(key), iv)
+	iv := AESZeroBytes()
+	decrypted, err := cryptopals.DecryptAESCBC(data, key, iv)
 	if err != nil {
 		t.Error(err)
 	}
-	plaintext := string(decrypted)
-	if !strings.Contains(plaintext, "go white boy go") {
+	plaintext1 := string(decrypted)
+	if !strings.Contains(plaintext1, "go white boy go") {
 		t.Errorf("failed to decrypt string")
+	}
+
+	iv = AESRandomBytes()
+	encrypted, err := cryptopals.EncryptAESCBC(decrypted, key, iv)
+	if err != nil {
+		t.Error(err)
+	}
+	decrypted, err = cryptopals.DecryptAESCBC(encrypted, key, iv)
+	if err != nil {
+		t.Error(err)
+	}
+	plaintext2 := string(decrypted)
+	if plaintext1 != plaintext2 {
+		//t.Errorf("strings are not equal: %s", plaintext2)
+		t.Errorf("strings are not equal")
 	}
 }

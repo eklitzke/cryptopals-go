@@ -25,6 +25,12 @@ func PadPKCS7(data []byte, blockSize int) []byte {
 	return padded
 }
 
+// pad a buffer for AES, using AESBlocKSize
+func PadAES(data []byte) []byte {
+	return PadPKCS7(data, AESBlockSize)
+}
+
+// undo PKCS#7 padding
 func UnpadPKCS7(data []byte) []byte {
 	if len(data) == 0 {
 		return data
