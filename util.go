@@ -67,3 +67,14 @@ func AESRandomBytes() []byte { return RandomBytes(AESBlockSize) }
 
 // Wrapper for ZeroBytes using AESBlockSize
 func AESZeroBytes() []byte { return ZeroBytes(AESBlockSize) }
+
+func PrintChunks(prefix string, x []byte) {
+	scanner, err := NewBlockScanner(x, AESBlockSize)
+	if err != nil {
+		fmt.Printf("error: failed to create scanner: %v\n", err)
+		return
+	}
+	for scanner.Scan() {
+		fmt.Printf("%s%v\n", prefix, scanner.Bytes())
+	}
+}
