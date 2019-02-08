@@ -13,26 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"strings"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS1C6(t *testing.T) {
 	const haml = "this is a test"
 	const hamr = "wokka wokka!!!"
-	dist := cryptopals.HammingDistance([]byte(haml), []byte(hamr))
+	dist := HammingDistance([]byte(haml), []byte(hamr))
 	const expectedDist = 37
 	if dist != expectedDist {
 		t.Errorf("expected hamming distance %d, got %d", expectedDist, dist)
 	}
 
 	data := DecodeBase64File(t, "challenge-data/6.txt")
-	_, plain, err := cryptopals.BreakRepeatingKeyXOR(data, cryptopals.BreakOpts{})
+	_, plain, err := BreakRepeatingKeyXOR(data, BreakOpts{})
 	if err != nil {
 		t.Error(err)
 	}

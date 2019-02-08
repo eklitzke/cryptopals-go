@@ -13,13 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"os"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS1C4(t *testing.T) {
@@ -30,7 +28,7 @@ func TestS1C4(t *testing.T) {
 	defer f.Close()
 
 	const expected = "Now that the party is jumping\n"
-	output, err := cryptopals.SearchSingleByteXOR(f)
+	output, err := SearchSingleByteXOR(f)
 	if err != nil {
 		t.Errorf("error from SearchSingleByteXOR: %v", err)
 	}

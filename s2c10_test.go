@@ -13,13 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"strings"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS2C10(t *testing.T) {
@@ -27,7 +25,7 @@ func TestS2C10(t *testing.T) {
 
 	data := DecodeBase64File(t, "challenge-data/10.txt")
 	iv := AESZeroBytes()
-	decrypted, err := cryptopals.DecryptAESCBC(data, key, iv)
+	decrypted, err := DecryptAESCBC(data, key, iv)
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,11 +35,11 @@ func TestS2C10(t *testing.T) {
 	}
 
 	iv = AESRandomBytes()
-	encrypted, err := cryptopals.EncryptAESCBC(decrypted, key, iv)
+	encrypted, err := EncryptAESCBC(decrypted, key, iv)
 	if err != nil {
 		t.Error(err)
 	}
-	decrypted, err = cryptopals.DecryptAESCBC(encrypted, key, iv)
+	decrypted, err = DecryptAESCBC(encrypted, key, iv)
 	if err != nil {
 		t.Error(err)
 	}

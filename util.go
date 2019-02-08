@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"bytes"
@@ -22,8 +22,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 // DecodeBase64File reads a base64 encoded file, and returns the decoded
@@ -59,7 +57,7 @@ func ZeroBytes(size int) []byte {
 }
 
 // Wrapper for RandomBytes using AESBlockSize
-func AESRandomBytes() []byte { return RandomBytes(cryptopals.AESBlockSize) }
+func AESRandomBytes() []byte { return RandomBytes(AESBlockSize) }
 
 // Wrapper for ZeroBytes using AESBlockSize
-func AESZeroBytes() []byte { return ZeroBytes(cryptopals.AESBlockSize) }
+func AESZeroBytes() []byte { return ZeroBytes(AESBlockSize) }

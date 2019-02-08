@@ -13,21 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"bytes"
 	"strings"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS1C7(t *testing.T) {
 	const key = "YELLOW SUBMARINE"
 
 	data := DecodeBase64File(t, "challenge-data/7.txt")
-	decrypted, err := cryptopals.DecryptAESECB(data, []byte(key))
+	decrypted, err := DecryptAESECB(data, []byte(key))
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,7 +34,7 @@ func TestS1C7(t *testing.T) {
 		t.Errorf("bad plaintext: %s\n", plaintext)
 	}
 
-	encrypted, err := cryptopals.EncryptAESECB(decrypted, []byte(key))
+	encrypted, err := EncryptAESECB(decrypted, []byte(key))
 	if err != nil {
 		t.Error(err)
 	}

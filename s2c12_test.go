@@ -13,21 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"bytes"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS2C12(t *testing.T) {
-	crypter := cryptopals.ByteAtATimeECBEncrypter{
+	crypter := ByteAtATimeECBEncrypter{
 		Key:     AESRandomBytes(),
 		Unknown: DecodeBase64File(t, "challenge-data/12.txt"),
 	}
-	decrypted, err := cryptopals.BreakAESECB(crypter)
+	decrypted, err := BreakAESECB(crypter)
 	if err != nil {
 		t.Error(err)
 	}

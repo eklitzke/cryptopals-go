@@ -13,24 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"bytes"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS2C9(t *testing.T) {
 	const input = "YELLOW SUBMARINE"
 	const expected = "YELLOW SUBMARINE\x04\x04\x04\x04"
-	out := cryptopals.PadPKCS7([]byte(input), 20)
+	out := PadPKCS7([]byte(input), 20)
 	if !bytes.Equal(out, []byte(expected)) {
 		t.Errorf("expected %v, got %v", expected, out)
 	}
 
-	unpadded := cryptopals.UnpadPKCS7(out)
+	unpadded := UnpadPKCS7(out)
 	if !bytes.Equal(unpadded, []byte(input)) {
 		t.Errorf("expected %v, got %v", input, unpadded)
 	}

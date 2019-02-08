@@ -13,13 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"math/rand"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 // generate an array of bytes with size between [minSize, maxSize)
@@ -28,40 +26,40 @@ func variableRandomBytes(minSize, maxSize int) []byte {
 	return RandomBytes(size)
 }
 
-func scrambleAndEncrypt(data []byte) (cipher []byte, mode cryptopals.EncryptionMode, err error) {
+func scrambleAndEncrypt(data []byte) (cipher []byte, mode EncryptionMode, err error) {
 	key := AESRandomBytes()
 
 	buf := variableRandomBytes(5, 11)
 	buf = append(buf, data...)
 	buf = append(buf, variableRandomBytes(5, 11)...)
-	buf = cryptopals.PadAES(buf)
+	buf = PadAES(buf)
 
 	if rand.Intn(2) == 0 {
-		mode = cryptopals.ECB
+		mode = ECB
 	} else {
-		mode = cryptopals.CBC
+		mode = CBC
 	}
 	coin := rand.Intn(2)
 	if coin == 0 {
-		mode = cryptopals.ECB
-		cipher, err = cryptopals.EncryptAESECB(buf, key)
+		mode = ECB
+		cipher, err = EncryptAESECB(buf, key)
 	} else {
 		iv := AESRandomBytes()
-		mode = cryptopals.CBC
-		cipher, err = cryptopals.EncryptAESCBC(buf, key, iv)
+		mode = CBC
+		cipher, err = EncryptAESCBC(buf, key, iv)
 	}
 	return
 }
 
 func TestS2C11(t *testing.T) {
-	data := ZeroBytes(cryptopals.MinOracleDetectionSize)
+	data := ZeroBytes(MinOracleDetectionSize)
 	for i := 0; i < 100; i++ {
 		cipher, mode, err := scrambleAndEncrypt(data)
 		if err != nil {
 			t.Error(err)
 		}
 
-		detectedMode, err := cryptopals.EncryptionModeOracle(cipher)
+		detectedMode, err := EncryptionModeOracle(cipher)
 		if err != nil {
 			t.Error(err)
 		}
@@ -70,8 +68,8 @@ func TestS2C11(t *testing.T) {
 		}
 	}
 
-	_, err := cryptopals.EncryptionModeOracle(ZeroBytes(cryptopals.MinOracleDetectionSize - 1))
-	if err != cryptopals.OracleBufferTooSmallErr {
+	_, err := EncryptionModeOracle(ZeroBytes(MinOracleDetectionSize - 1))
+	if err != OracleBufferTooSmallErr {
 		t.Errorf("expected error OracleBufferTooSmallErr, instead got: %v", err)
 	}
 }

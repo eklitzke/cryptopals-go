@@ -13,15 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package cryptopals_test
+package cryptopals
 
 import (
 	"bufio"
 	"encoding/hex"
 	"os"
 	"testing"
-
-	"github.com/eklitzke/cryptopals"
 )
 
 func TestS1C8(t *testing.T) {
@@ -43,7 +41,7 @@ func TestS1C8(t *testing.T) {
 	}
 
 	const aesECBModeCipherCount = 4
-	_, repeats, err := cryptopals.DetectAESECBMode(ciphers)
+	_, repeats, err := DetectAESECBMode(ciphers)
 	if err != nil {
 		t.Error(err)
 	}
