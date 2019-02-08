@@ -45,7 +45,7 @@ func UnpadPKCS7(data []byte) ([]byte, error) {
 	lastByte := data[len(data)-1]
 	trailingCount := int(lastByte)
 	if trailingCount < 0 || trailingCount > AESBlockSize {
-		return nil, fmt.Errorf("invalid trailing count %d", trailingCount)
+		return nil, fmt.Errorf("invalid trailing count %d (byte %d) from buffer %v", trailingCount, lastByte, data)
 	}
 	for i := 1; i < trailingCount; i++ {
 		b := data[len(data)-i-1]

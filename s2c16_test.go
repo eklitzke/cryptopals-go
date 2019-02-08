@@ -76,6 +76,15 @@ func (c c16crypter) IsAdmin(x []byte) bool {
 	return false
 }
 
+// FlipBit flips the low order bit in a byte.
+func FlipBit(b byte) byte {
+	const one = byte(1)
+	if b&one == one {
+		return b & 254
+	}
+	return b | 1
+}
+
 func TestS2C16(t *testing.T) {
 	const quotedString = "comment1=cooking%20MCs;userdata=test%3B%3Dtest;comment2=%20like%20a%20pound%20of%20bacon"
 	if insertUserData("test;=test") != quotedString {
@@ -99,18 +108,11 @@ func TestS2C16(t *testing.T) {
 	}
 
 	// replace the : with ;
-	if enc[16]&byte(1) == byte(1) {
-		enc[16] &= 254
-	} else {
-		enc[16] |= 1
-	}
+	enc[16] = FlipBit(enc[16])
 
 	// replace the < with =
-	if enc[22]&byte(1) == byte(1) {
-		enc[22] &= 254
-	} else {
-		enc[22] |= 1
-	}
+	enc[22] = FlipBit(enc[22])
+
 	if !c.IsAdmin(enc) {
 		t.Error("failed to set admin status")
 	}
