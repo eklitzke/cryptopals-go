@@ -21,8 +21,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	mrand "math/rand"
 	"testing"
+	"time"
 )
+
+func init() {
+	mrand.Seed(time.Now().UTC().UnixNano())
+}
 
 // DecodeBase64File reads a base64 encoded file, and returns the decoded
 // representation.
