@@ -20,6 +20,10 @@ import (
 	"errors"
 )
 
+type Encrypter interface {
+	Encrypt([]byte) ([]byte, error)
+}
+
 type ByteAtATimeECBEncrypter struct {
 	Key     []byte
 	Unknown []byte
@@ -31,7 +35,7 @@ func (b ByteAtATimeECBEncrypter) Encrypt(data []byte) ([]byte, error) {
 	return EncryptAESECB(data, b.Key)
 }
 
-func detectBlockSize(b ByteAtATimeECBEncrypter) (int, error) {
+func DetectBlockSize(b Encrypter) (int, error) {
 	for i := 2; i < 1000; i += 2 {
 		blockSize := int(i / 2)
 		buf := make([]byte, i)
@@ -49,7 +53,7 @@ func detectBlockSize(b ByteAtATimeECBEncrypter) (int, error) {
 
 func BreakAESECB(b ByteAtATimeECBEncrypter) (known []byte, err error) {
 	var blockSize int
-	blockSize, err = detectBlockSize(b)
+	blockSize, err = DetectBlockSize(b)
 	if err != nil {
 		return
 	}

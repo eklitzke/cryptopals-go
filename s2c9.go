@@ -15,6 +15,8 @@
 
 package cryptopals
 
+import "fmt"
+
 // pad a buffer using PKCS#7
 func PadPKCS7(data []byte, blockSize int) []byte {
 	padded := data
@@ -30,17 +32,27 @@ func PadAES(data []byte) []byte {
 	return PadPKCS7(data, AESBlockSize)
 }
 
+// pad a buffer using PKCS#7 for AES
+func PadAESString(s string) []byte {
+	return PadPKCS7([]byte(s), AESBlockSize)
+}
+
 // undo PKCS#7 padding
-func UnpadPKCS7(data []byte) []byte {
+func UnpadPKCS7(data []byte) ([]byte, error) {
 	if len(data) == 0 {
-		return data
+		return data, nil
 	}
 	lastByte := data[len(data)-1]
-	for i := 1; byte(i) < lastByte; i++ {
-		if data[len(data)-1-i] != lastByte {
-			return data // the data is not padded
+	trailingCount := int(lastByte)
+	if trailingCount < 0 || trailingCount > AESBlockSize {
+		return nil, fmt.Errorf("invalid trailing count %d", trailingCount)
+	}
+	for i := 1; i < trailingCount; i++ {
+		b := data[len(data)-i-1]
+		if b != lastByte {
+			return nil, fmt.Errorf("expected %d padding bytes, bad byte %v found with i=%d", trailingCount, b, i)
 		}
 	}
 
-	return data[:len(data)-int(lastByte)]
+	return data[:len(data)-int(lastByte)], nil
 }

@@ -28,7 +28,10 @@ func TestS2C9(t *testing.T) {
 		t.Errorf("expected %v, got %v", expected, out)
 	}
 
-	unpadded := UnpadPKCS7(out)
+	unpadded, err := UnpadPKCS7(out)
+	if err != nil {
+		t.Error(err)
+	}
 	if !bytes.Equal(unpadded, []byte(input)) {
 		t.Errorf("expected %v, got %v", input, unpadded)
 	}
