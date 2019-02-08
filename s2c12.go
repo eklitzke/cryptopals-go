@@ -18,6 +18,7 @@ package cryptopals
 import (
 	"bytes"
 	"errors"
+	"fmt"
 )
 
 type Encrypter interface {
@@ -94,7 +95,7 @@ outer:
 				continue outer
 			}
 		}
-		err = errors.New("failed to find byte")
+		err = fmt.Errorf("failed to find byte, i = %d", i)
 		return
 	}
 
