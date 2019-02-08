@@ -21,15 +21,15 @@ import (
 )
 
 func TestS2C12(t *testing.T) {
-	crypter := ByteAtATimeECBEncrypter{
-		Key:     AESRandomBytes(),
-		Unknown: DecodeBase64File(t, "challenge-data/12.txt"),
+	crypter := byteAtATimeECBEncrypter{
+		key:    AESRandomBytes(),
+		suffix: DecodeBase64File(t, "challenge-data/12.txt"),
 	}
 	decrypted, err := BreakAESECB(crypter)
 	if err != nil {
 		t.Error(err)
 	}
-	if !bytes.Equal(decrypted, crypter.Unknown) {
-		t.Error("failed to decode unknown string")
+	if !bytes.Equal(decrypted, crypter.suffix) {
+		t.Errorf("failed to decode unknown string: got %v, expected %v", decrypted, crypter.suffix)
 	}
 }

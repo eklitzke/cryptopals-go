@@ -23,16 +23,18 @@ import (
 func TestS2C14(t *testing.T) {
 	r := randomPrefixECBCrypter{
 		key:    AESRandomBytes(),
-		prefix: variableRandomBytes(5, 50),
 		suffix: DecodeBase64File(t, "challenge-data/12.txt"),
 	}
+	for i := 0; i < 10; i++ {
+		r.prefix = variableRandomBytes(5, 50)
 
-	known, err := BreakAESECBWithPrefix(r)
-	if err != nil {
-		t.Error(err)
-	}
-	plaintext := string(known)
-	if !strings.Contains(plaintext, "waving just to say hi") {
-		t.Error("failed to break aes ecb with prefix")
+		known, err := BreakAESECBWithPrefix(r)
+		if err != nil {
+			t.Error(err)
+		}
+		plaintext := string(known)
+		if !strings.Contains(plaintext, "waving just to say hi") {
+			t.Error("failed to break aes ecb with prefix")
+		}
 	}
 }

@@ -17,7 +17,6 @@ package cryptopals
 
 import (
 	"bytes"
-	"fmt"
 )
 
 type randomPrefixECBCrypter struct {
@@ -102,7 +101,7 @@ func BreakAESECBWithPrefix(b randomPrefixECBCrypter) (known []byte, err error) {
 	}
 
 outer:
-	for i := 0; i < len(b.suffix); i++ {
+	for i := 0; ; i++ {
 		shortBlock := make([]byte, initialPad+AESBlockSize-1-(i%AESBlockSize))
 		cipher, err = b.Encrypt(shortBlock)
 		if err != nil {
@@ -124,9 +123,8 @@ outer:
 				continue outer
 			}
 		}
-		err = fmt.Errorf("failed to find byte, i = %d", i)
-		return
+		break
 	}
-
+	known = known[:len(known)-1]
 	return
 }

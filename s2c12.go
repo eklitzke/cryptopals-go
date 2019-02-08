@@ -18,22 +18,21 @@ package cryptopals
 import (
 	"bytes"
 	"errors"
-	"fmt"
 )
 
 type Encrypter interface {
 	Encrypt([]byte) ([]byte, error)
 }
 
-type ByteAtATimeECBEncrypter struct {
-	Key     []byte
-	Unknown []byte
+type byteAtATimeECBEncrypter struct {
+	key    []byte
+	suffix []byte
 }
 
-func (b ByteAtATimeECBEncrypter) Encrypt(data []byte) ([]byte, error) {
-	data = append(data, b.Unknown...)
+func (b byteAtATimeECBEncrypter) Encrypt(data []byte) ([]byte, error) {
+	data = append(data, b.suffix...)
 	data = PadAES(data)
-	return EncryptAESECB(data, b.Key)
+	return EncryptAESECB(data, b.key)
 }
 
 func DetectBlockSize(b Encrypter) (int, error) {
@@ -52,7 +51,7 @@ func DetectBlockSize(b Encrypter) (int, error) {
 
 }
 
-func BreakAESECB(b ByteAtATimeECBEncrypter) (known []byte, err error) {
+func BreakAESECB(b byteAtATimeECBEncrypter) (known []byte, err error) {
 	var blockSize int
 	blockSize, err = DetectBlockSize(b)
 	if err != nil {
@@ -73,7 +72,7 @@ func BreakAESECB(b ByteAtATimeECBEncrypter) (known []byte, err error) {
 	var cipher, c []byte
 
 outer:
-	for i := 0; i < len(b.Unknown); i++ {
+	for i := 0; ; i++ {
 		shortBlock := make([]byte, blockSize-1-(i%blockSize))
 		cipher, err = b.Encrypt(shortBlock)
 		if err != nil {
@@ -95,9 +94,8 @@ outer:
 				continue outer
 			}
 		}
-		err = fmt.Errorf("failed to find byte, i = %d", i)
-		return
+		break
 	}
-
+	known = known[:len(known)-1]
 	return
 }
