@@ -1,0 +1,16 @@
+* S3C17
+
+Idea: flip the low bit in the second to last byte in a block. If the block still
+has valid padding, then the last byte must be 01h. If invalid, flip the third to
+last byte in the block. If the block is still valid, the block ends with 0202h.
+Try the next bit, if so it ends with 030303h, etc. In this way we can find the
+padding byte (and know how many there are).
+
+For the last block, now make add one more padding byte.
+
+Next: for any arbitrary block, try all 256 ways of flipping the bits in the last
+byte. Truncate any following blocks, and provide this to the oracle. One of the
+ways will set the byte to 01h. Based on the mask we applied, we can figure out
+what the cleartext last byte was. Now set it to 02h and proceed to the next
+byte. For the first block, we do the same thing but use the IV was the zeroth
+block.

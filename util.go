@@ -77,4 +77,50 @@ func PrintChunks(prefix string, x []byte) {
 	for scanner.Scan() {
 		fmt.Printf("%s%v\n", prefix, scanner.Bytes())
 	}
+	PrintLine("-")
+}
+
+func PrintRepeatedString(s string, count int) {
+	c := 0
+	for c < count {
+		fmt.Print(s)
+		c += len(s)
+	}
+	fmt.Print("\n")
+}
+
+func PrintLine(s string) {
+	PrintRepeatedString(s, 16)
+}
+
+// Reverse bytes in place.
+func ReverseInPlace(x []byte) {
+	for i := len(x)/2 - 1; i >= 0; i-- {
+		opp := len(x) - 1 - i
+		x[i], x[opp] = x[opp], x[i]
+	}
+}
+
+// Reverse bytes without mutating the original array.
+func ReverseBytes(x []byte) []byte {
+	y := make([]byte, len(x))
+	copy(y, x)
+	ReverseInPlace(y)
+	return y
+}
+
+// n = 0 means the lowest bit
+// n = 1 means the second lowest bit
+// ...
+// n = 7 mean the highest bit
+func FlipNthBit(b byte, n uint) byte {
+	return b ^ (1 << n)
+}
+
+// FlipLastBit flips the low order bit in a byte.
+func FlipLastBit(b byte) byte {
+	if b&1 == 1 {
+		return b & 254
+	}
+	return b | 1
 }

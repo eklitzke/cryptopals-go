@@ -43,7 +43,7 @@ func (s *BlockScanner) Bytes() []byte {
 // NewBlockScanner creates a new BlockScanner.
 func NewBlockScanner(data []byte, blockSize int) (*BlockScanner, error) {
 	if len(data)%blockSize != 0 {
-		return nil, fmt.Errorf("data size %d not aligned to %d bytes", len(data), blockSize)
+		return nil, fmt.Errorf("failed to create NewBlockScanner, input size %d not aligned to blockSize %d", len(data), blockSize)
 	}
 	return &BlockScanner{
 		data:      data,

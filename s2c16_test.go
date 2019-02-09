@@ -99,18 +99,11 @@ func TestS2C16(t *testing.T) {
 	}
 
 	// replace the : with ;
-	if enc[16]&byte(1) == byte(1) {
-		enc[16] &= 254
-	} else {
-		enc[16] |= 1
-	}
+	enc[16] = FlipLastBit(enc[16])
 
 	// replace the < with =
-	if enc[22]&byte(1) == byte(1) {
-		enc[22] &= 254
-	} else {
-		enc[22] |= 1
-	}
+	enc[22] = FlipLastBit(enc[22])
+
 	if !c.IsAdmin(enc) {
 		t.Error("failed to set admin status")
 	}
