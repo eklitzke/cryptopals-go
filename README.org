@@ -14,7 +14,4 @@ $ go test -v
 $ make
 #+END_SRC
 
-I am releasing all of this code under the GPLv3+ license, except where otherwise
-noted:
-
- - The file =ecb.go= was taken from [[https://codereview.appspot.com/7860047][Go CL 7860047]].
+I am releasing all of this code under the GPLv3+.

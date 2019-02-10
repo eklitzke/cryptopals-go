@@ -15,26 +15,41 @@
 
 package cryptopals
 
-import "crypto/aes"
+import (
+	"crypto/aes"
+	"fmt"
+)
 
+// Encrypt data using AES in ECB mode. The block must be aligned.
 func EncryptAESECB(data, key []byte) ([]byte, error) {
+	if len(data)%AESBlockSize != 0 {
+		return nil, fmt.Errorf("input EncryptAESECB data size %d not aligned to size %d", len(data), AESBlockSize)
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	enc := NewECBEncrypter(block)
-	dst := make([]byte, len(data))
-	enc.CryptBlocks(dst, data)
-	return dst, nil
+
+	out := make([]byte, len(data))
+	for i := 0; i < len(data); i += AESBlockSize {
+		block.Encrypt(out[i:i+AESBlockSize], data[i:i+AESBlockSize])
+	}
+	return out, nil
 }
 
-func DecryptAESECB(data []byte, key []byte) ([]byte, error) {
+// Decrypt data using AES in ECB mode. The block must be aligned.
+func DecryptAESECB(data, key []byte) ([]byte, error) {
+	if len(data)%AESBlockSize != 0 {
+		return nil, fmt.Errorf("input DecryptAESECB data size %d not aligned to size %d", len(data), AESBlockSize)
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	dec := NewECBDecrypter(block)
-	dst := make([]byte, len(data))
-	dec.CryptBlocks(dst, data)
-	return dst, nil
+
+	out := make([]byte, len(data))
+	for i := 0; i < len(data); i += AESBlockSize {
+		block.Decrypt(out[i:i+AESBlockSize], data[i:i+AESBlockSize])
+	}
+	return out, nil
 }

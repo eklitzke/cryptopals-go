@@ -30,7 +30,6 @@ func EncryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	enc := NewECBEncrypter(block)
 	dst := make([]byte, AESBlockSize)
 	for scanner.Scan() {
 		chunk := scanner.Bytes()
@@ -38,7 +37,7 @@ func EncryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 		if err != nil {
 			return
 		}
-		enc.CryptBlocks(dst, chunk)
+		block.Encrypt(dst, chunk)
 
 		out = append(out, dst...)
 		iv = dst
@@ -57,12 +56,11 @@ func DecryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	dec := NewECBDecrypter(block)
 
 	dst := make([]byte, AESBlockSize)
 	for scanner.Scan() {
 		chunk := scanner.Bytes()
-		dec.CryptBlocks(dst, chunk)
+		block.Decrypt(dst, chunk)
 		dst, err = FixedXOR(dst, iv)
 		if err != nil {
 			return nil, err
