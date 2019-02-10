@@ -17,29 +17,26 @@ package cryptopals
 
 import (
 	"crypto/aes"
+	"fmt"
 )
 
 // Encrypt data using AES in CBC mode, given a key and IV.
 func EncryptAESCBC(data, key, iv []byte) (out []byte, err error) {
-	scanner, err := NewBlockScanner(data, AESBlockSize)
-	if err != nil {
-		return nil, err
+	if len(data)%AESBlockSize != 0 {
+		return nil, fmt.Errorf("input EncryptAESCBC data size %d not aligned to size %d", len(data), AESBlockSize)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	dst := make([]byte, AESBlockSize)
-	for scanner.Scan() {
-		chunk := scanner.Bytes()
-		chunk, err = FixedXOR(chunk, iv)
-		if err != nil {
-			return
-		}
-		block.Encrypt(dst, chunk)
 
-		out = append(out, dst...)
+	out = make([]byte, len(data))
+	for i := 0; i < len(data); i += AESBlockSize {
+		chunk := data[i : i+AESBlockSize]
+		chunk, _ = FixedXOR(chunk, iv)
+		dst := out[i : i+AESBlockSize]
+		block.Encrypt(dst, chunk)
 		iv = dst
 	}
 	return
@@ -47,9 +44,8 @@ func EncryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 
 // Decrypt data using AES in CBC mode, given a key and IV.
 func DecryptAESCBC(data, key, iv []byte) (out []byte, err error) {
-	scanner, err := NewBlockScanner(data, AESBlockSize)
-	if err != nil {
-		return nil, err
+	if len(data)%AESBlockSize != 0 {
+		return nil, fmt.Errorf("input DecryptAESCBC data size %d not aligned to size %d", len(data), AESBlockSize)
 	}
 
 	block, err := aes.NewCipher(key)
@@ -57,15 +53,12 @@ func DecryptAESCBC(data, key, iv []byte) (out []byte, err error) {
 		return nil, err
 	}
 
-	dst := make([]byte, AESBlockSize)
-	for scanner.Scan() {
-		chunk := scanner.Bytes()
+	out = make([]byte, len(data))
+	for i := 0; i < len(data); i += AESBlockSize {
+		dst := out[i : i+AESBlockSize]
+		chunk := data[i : i+AESBlockSize]
 		block.Decrypt(dst, chunk)
-		dst, err = FixedXOR(dst, iv)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, dst...)
+		_ = FixedXORInPlace(dst, iv, dst)
 		iv = chunk
 	}
 	return

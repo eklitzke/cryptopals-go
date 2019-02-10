@@ -20,18 +20,26 @@ import (
 	"fmt"
 )
 
+// FixedXOR computes the fixed XOR of two byte arrays, and saves the output to out.
+func FixedXORInPlace(a, b, out []byte) error {
+	if len(a) != len(b) {
+		return fmt.Errorf("inputs have mismatched sizes %d and %d", len(a), len(b))
+
+	}
+	for i, x := range a {
+		out[i] = x ^ b[i]
+	}
+	return nil
+}
+
 // FixedXOR computes the fixed XOR of two byte arrays.
 func FixedXOR(a, b []byte) ([]byte, error) {
 	if len(a) != len(b) {
 		return nil, fmt.Errorf("inputs have mismatched sizes %d and %d", len(a), len(b))
-
 	}
-	var outb []byte
-	for i, ab := range a {
-		bb := b[i]
-		outb = append(outb, ab^bb)
-	}
-	return outb, nil
+	out := make([]byte, len(a))
+	err := FixedXORInPlace(a, b, out)
+	return out, err
 }
 
 // FixedXORHexString takes two equal-length hex strings and produces their
