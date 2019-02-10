@@ -119,8 +119,5 @@ func FlipNthBit(b byte, n uint) byte {
 
 // FlipLastBit flips the low order bit in a byte.
 func FlipLastBit(b byte) byte {
-	if b&1 == 1 {
-		return b & 254
-	}
-	return b | 1
+	return FlipNthBit(b, 0)
 }

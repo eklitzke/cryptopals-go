@@ -10,17 +10,18 @@ import (
 	"testing"
 )
 
-// Return the list of bit flips needed to make x look like y.
-func generateBitFlipsToCopy(x, y byte) []uint {
-	var out []uint
+// Generate a mask that can be applied using xor to convert x to y.
+func generateCopyMask(x, y byte) byte {
+	var finalMask byte
 	var i uint
 	for i = 0; i < 8; i++ {
 		mask := byte(1 << i)
 		if (x & mask) != (y & mask) {
-			out = append(out, i)
+			finalMask |= mask
 		}
 	}
-	return out
+	return finalMask
+
 }
 
 type c17crypter struct {
@@ -131,12 +132,10 @@ func solveC17Puzzle(c c17crypter, cipher, iv []byte) ([]byte, error) {
 		var offset int
 		for paddingByte < 16 {
 			// add one to all of the padding bytes
-			flips := generateBitFlipsToCopy(paddingByte, paddingByte+1)
+			mask := generateCopyMask(paddingByte, paddingByte+1)
 			for j := 0; j <= int(paddingByte); j++ {
 				offset = len(cipher) - j - AESBlockSize - 1
-				for _, flip := range flips {
-					cipher[offset] = FlipNthBit(cipher[offset], flip)
-				}
+				cipher[offset] ^= mask
 			}
 
 			var origByte byte
