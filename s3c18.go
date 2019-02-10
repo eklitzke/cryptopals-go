@@ -23,7 +23,7 @@ import (
 // CTR represents a CTR cipher.
 type CTR struct {
 	block  cipher.Block
-	stream []byte
+	stream [AESBlockSize]byte
 }
 
 // CTROpts represent options used to create a CTR.
@@ -44,14 +44,12 @@ func NewCTR(opts CTROpts) (*CTR, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// allocate stream
-	stream := make([]byte, AESBlockSize)
+	c := &CTR{block: block}
 
 	// set the Nonce bits in stream
 	i := 0
 	for opts.Nonce != 0 {
-		stream[i] = byte(opts.Nonce & 0xff)
+		c.stream[i] = byte(opts.Nonce & 0xff)
 		opts.Nonce >>= 8
 		i++
 	}
@@ -59,34 +57,28 @@ func NewCTR(opts CTROpts) (*CTR, error) {
 	// set the counter bits in stream
 	i = 8
 	for opts.Ctr != 0 {
-		stream[i] = byte(opts.Ctr & 0xff)
+		c.stream[i] = byte(opts.Ctr & 0xff)
 		opts.Ctr >>= 8
 		i++
 	}
 
-	return &CTR{
-		block:  block,
-		stream: stream,
-	}, nil
+	return c, nil
 }
 
 // used by Reset
-var zeroStream []byte
-
-// allocate zeroStream
-func init() { zeroStream = make([]byte, AESBlockSize) }
+var zeroStream [AESBlockSize]byte
 
 // Reset the internal stream.
-func (c *CTR) Reset() { copy(c.stream, zeroStream) }
+func (c *CTR) Reset() { copy(c.stream[:], zeroStream[:]) }
 
 // Encrypt data.
 func (c *CTR) Encrypt(in []byte) []byte {
 	out := make([]byte, len(in))
-	tmp := make([]byte, AESBlockSize)
+	var tmp [AESBlockSize]byte
 
 	for i := 0; i < len(in); i += AESBlockSize {
 		// encrypt the bytes in stream
-		c.block.Encrypt(tmp, c.stream)
+		c.block.Encrypt(tmp[:], c.stream[:])
 
 		// xor bytes in the next input block
 		block := in[i : i+AESBlockSize]
