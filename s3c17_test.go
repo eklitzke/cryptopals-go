@@ -1,3 +1,18 @@
+// Copyright (C) 2019  Evan Klitzke <evan@eklitzke.org>
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package cryptopals
 
 import (
@@ -14,10 +29,12 @@ type c17crypter struct {
 	iv  []byte
 }
 
+// decrypt input
 func (c c17crypter) decrypt(in []byte) (out []byte, err error) {
 	return DecryptAESCBC(in, c.key, c.iv)
 }
 
+// encrypt input
 func (c c17crypter) encrypt(in []byte) (out []byte, iv []byte, err error) {
 	out, err = EncryptAESCBC(in, c.key, c.iv)
 	iv = c.iv
@@ -48,7 +65,6 @@ func (c c17crypter) generateCopyMask(x, y byte) byte {
 		}
 	}
 	return finalMask
-
 }
 
 // force the byte at a given index to take on a particular value
@@ -59,11 +75,21 @@ func (c c17crypter) forceIndexToValue(cipher []byte, offset int, target byte) ([
 	for j := 0; j < 256; j++ {
 		mask := byte(j)
 		cipher[offset] ^= mask // flip bits
-		isValid := c.IsValid(cipher)
-		if isValid {
+		if c.IsValid(cipher) {
+			if target == 1 {
+				// handle edge case for the right-most byte
+				cipher[offset-1] ^= 1
+				v := c.IsValid(cipher)
+				cipher[offset-1] ^= 1
+				if !v {
+					goto undo
+				}
+			}
 			origByte := mask ^ target
 			return cipher, origByte, nil
 		}
+
+	undo:
 		cipher[offset] ^= mask // undo flip bits
 	}
 
@@ -72,17 +98,16 @@ func (c c17crypter) forceIndexToValue(cipher []byte, offset int, target byte) ([
 
 // solve the last block of the cipher
 func (c c17crypter) solveLastBlock(cipher []byte) (out []byte, err error) {
-	for i := 0; i < 16; i++ {
-		// The block might already be valid, in which case our forcing
-		// logic won't work. If that's the case, mutate the byte (and
-		// correct the mutation later).
-		extraFlip := false
-		if c.IsValid(cipher) {
-			cipher[len(cipher)-AESBlockSize-i-1] ^= 255
-			extraFlip = true
-		}
+	// if the block is already padded, force it to be unpadded
+	extraFlip := false
+	if c.IsValid(cipher) {
+		cipher[len(cipher)-AESBlockSize-1] ^= 1
+		extraFlip = true
+	}
 
-		// one to all of the preceeding padding bytes
+	// solve all bytes
+	for i := 0; i < 16; i++ {
+		// increment all of the preceeding padding bytes
 		b := byte(i)
 		mask := c.generateCopyMask(b, b+1)
 		for j := 0; j < i; j++ {
@@ -97,12 +122,12 @@ func (c c17crypter) solveLastBlock(cipher []byte) (out []byte, err error) {
 			return nil, err
 		}
 
-		// undo the bit flip if we did one earlier
-		if extraFlip {
-			origByte ^= 255
-		}
-
 		out = append(out, origByte)
+	}
+
+	// undo extra flip
+	if extraFlip {
+		out[0] ^= 1
 	}
 
 	return out, nil
@@ -172,6 +197,8 @@ func TestS3C17(t *testing.T) {
 
 		if !bytes.Equal(padded, solved) {
 			t.Errorf("failed to solve puzzle %d, bytes don't match", i)
+			PrintBlocks("ORIG: ", padded)
+			PrintBlocks("SOLV: ", solved)
 			break
 		}
 	}
