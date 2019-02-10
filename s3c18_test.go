@@ -24,12 +24,11 @@ func TestS3C18(t *testing.T) {
 	const test = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ=="
 	b := DecodeBase64String(t, test)
 
-	ctr := NewCTR([]byte("YELLOW SUBMARINE"))
-	out, err := ctr.Decrypt(b)
+	ctr, err := NewCTR(CTROpts{KeyString: "YELLOW SUBMARINE"})
 	if err != nil {
 		t.Error(err)
 	}
-
+	out := ctr.Decrypt(b)
 	plaintext := string(out)
 	if !strings.Contains(plaintext, "Ice, Ice, baby") {
 		t.Error("failed to decrypt ctr")
