@@ -16,20 +16,13 @@
 package cryptopals
 
 import (
-	"encoding/base64"
-	"io/ioutil"
 	"strings"
 	"testing"
 )
 
 func TestS3C18(t *testing.T) {
 	const test = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ=="
-	r := strings.NewReader(test)
-	dec := base64.NewDecoder(base64.StdEncoding, r)
-	b, err := ioutil.ReadAll(dec)
-	if err != nil {
-		t.Error(err)
-	}
+	b := DecodeBase64String(t, test)
 
 	ctr := NewCTR([]byte("YELLOW SUBMARINE"))
 	out, err := ctr.Decrypt(b)

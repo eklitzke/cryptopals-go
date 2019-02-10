@@ -17,7 +17,6 @@ package cryptopals
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -172,15 +171,10 @@ func TestS3C17(t *testing.T) {
 
 	// decode the puzzle, and pad all of the lines
 	for i, line := range lines {
-		r := strings.NewReader(line)
-		dec := base64.NewDecoder(base64.StdEncoding, r)
-		b, err := ioutil.ReadAll(dec)
-		if err != nil {
-			t.Error(err)
-		}
+		raw := DecodeBase64String(t, line)
 
 		// pad the input
-		padded := PadPKCS7(b, AESBlockSize)
+		padded := PadPKCS7(raw, AESBlockSize)
 
 		// encrypt the cleartext
 		cipher, iv, err := c.encrypt(padded)

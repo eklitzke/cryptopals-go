@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	mrand "math/rand"
+	"strings"
 	"testing"
 	"time"
 )
@@ -43,6 +44,17 @@ func DecodeBase64File(t *testing.T, fileName string) []byte {
 	data, err = ioutil.ReadAll(enc)
 	if err != nil {
 		t.Errorf("failed to base64 decode file %s: %v", fileName, err)
+		return nil
+	}
+	return data
+}
+
+func DecodeBase64String(t *testing.T, s string) []byte {
+	r := strings.NewReader(s)
+	d := base64.NewDecoder(base64.StdEncoding, r)
+	data, err := ioutil.ReadAll(d)
+	if err != nil {
+		t.Errorf("failed to base64 decode input string: %v", err)
 		return nil
 	}
 	return data
