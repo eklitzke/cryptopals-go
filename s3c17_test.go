@@ -3,26 +3,11 @@ package cryptopals
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
 )
-
-// Generate a mask that can be applied using xor to convert x to y.
-func generateCopyMask(x, y byte) byte {
-	var finalMask byte
-	var i uint
-	for i = 0; i < 8; i++ {
-		mask := byte(1 << i)
-		if (x & mask) != (y & mask) {
-			finalMask |= mask
-		}
-	}
-	return finalMask
-
-}
 
 type c17crypter struct {
 	key []byte
@@ -52,129 +37,97 @@ func (c c17crypter) IsValid(in []byte) bool {
 	return err == nil
 }
 
-var errFailedToFindPaddingByte = errors.New("failed to find padding byte")
-
-func (c c17crypter) detectPaddingByte(in []byte) (byte, error) {
-	// test each padding bit
-	var offset int
-	for i := 1; i <= AESBlockSize; i++ {
-		// find the offset to flip
-		offset = len(in) - i - AESBlockSize - 1
-
-		// flip the bit
-		in[offset] = FlipLastBit(in[offset])
-
-		isValid := c.IsValid(in)
-
-		// undo bit flip
-		in[offset] = FlipLastBit(in[offset])
-
-		// is it valid?
-		if isValid {
-			return byte(i), nil
+// Generate a mask that can be applied using xor to convert x to y.
+func (c c17crypter) generateCopyMask(x, y byte) byte {
+	var finalMask byte
+	var i uint
+	for i = 0; i < 8; i++ {
+		mask := byte(1 << i)
+		if (x & mask) != (y & mask) {
+			finalMask |= mask
 		}
 	}
-	return 0, errFailedToFindPaddingByte
-}
+	return finalMask
 
-var errFailedToForceIndex = errors.New("failed to force index to value")
+}
 
 // force the byte at a given index to take on a particular value
 func (c c17crypter) forceIndexToValue(cipher []byte, offset int, target byte) ([]byte, byte, error) {
-	paddingByte := target - 1
-
-	// now try all the ways to flip the next byte until we get the
-	// desired padding byte
+	// try all the ways to flip the next byte until we get the desired
+	// padding byte
+	offset -= AESBlockSize
 	for j := 0; j < 256; j++ {
-		model := byte(j)
-		cipher[offset] ^= model // flip bits
+		mask := byte(j)
+		cipher[offset] ^= mask // flip bits
 		isValid := c.IsValid(cipher)
 		if isValid {
-			var origByte byte
-			if paddingByte != 0 {
-				origByte = paddingByte ^ model
-			} else {
-				origByte = model ^ target
-			}
+			origByte := mask ^ target
 			return cipher, origByte, nil
 		}
-		cipher[offset] ^= model // undo flip bits
+		cipher[offset] ^= mask // undo flip bits
 	}
 
-	return nil, 0, errFailedToForceIndex
+	return nil, 0, fmt.Errorf("failed to force index %d to value %d", offset, target)
 }
 
-// solveC17Puzzle finds the original cleartext solution only given the ciphertext and iv
-func solveC17Puzzle(c c17crypter, cipher, iv []byte) ([]byte, error) {
-	finalSize := len(cipher)
-
-	// prepend the iv
-	cipher = append(iv, cipher...)
-
-	// copy the original cipher
-	savedCipher := make([]byte, len(cipher))
-	copy(savedCipher, cipher)
-
-	// detect the padding byte
-	paddingByte, err := c.detectPaddingByte(cipher)
-	if err != nil {
-		return nil, err
-	}
-
-	// the original bytes, which we'll generate in reverse order
-	var origBytes []byte
-	for i := 0; i < int(paddingByte); i++ {
-		origBytes = append(origBytes, paddingByte)
-	}
-
-	// finish solving a block
-	finishBlock := func(cipher []byte, paddingByte byte) (err error) {
-		var offset int
-		for paddingByte < 16 {
-			// add one to all of the padding bytes
-			mask := generateCopyMask(paddingByte, paddingByte+1)
-			for j := 0; j <= int(paddingByte); j++ {
-				offset = len(cipher) - j - AESBlockSize - 1
-				cipher[offset] ^= mask
-			}
-
-			var origByte byte
-			cipher, origByte, err = c.forceIndexToValue(cipher, offset, paddingByte+1)
-			if err != nil {
-				return err
-			}
-
-			// the original byte is xor(paddingByte, model)
-			origBytes = append(origBytes, origByte)
-			paddingByte++
+// solve the last block of the cipher
+func (c c17crypter) solveLastBlock(cipher []byte) (out []byte, err error) {
+	for i := 0; i < 16; i++ {
+		// The block might already be valid, in which case our forcing
+		// logic won't work. If that's the case, mutate the byte (and
+		// correct the mutation later).
+		extraFlip := false
+		if c.IsValid(cipher) {
+			cipher[len(cipher)-AESBlockSize-i-1] ^= 255
+			extraFlip = true
 		}
-		return nil
-	}
 
-	// finish solving the last block
-	if err := finishBlock(cipher, paddingByte); err != nil {
-		return nil, err
-	}
+		// one to all of the preceeding padding bytes
+		b := byte(i)
+		mask := c.generateCopyMask(b, b+1)
+		for j := 0; j < i; j++ {
+			offset := len(cipher) - j - AESBlockSize - 1
+			cipher[offset] ^= mask
+		}
 
-	// solve the remaining blocks
-	for len(origBytes) < finalSize {
-		toCopy := len(savedCipher) - len(origBytes)
-		cipher := make([]byte, toCopy)
-		copy(cipher, savedCipher[:toCopy])
-
-		// go to the last byte in the next origBytes
-		offset := finalSize - len(origBytes) - 1
-
-		// force the last byte to be one
-		var lastByte byte
-		cipher, lastByte, err = c.forceIndexToValue(cipher, offset, 1)
+		// force the byte to be our desired padding byte
+		var origByte byte
+		cipher, origByte, err = c.forceIndexToValue(cipher, len(cipher)-i-1, b+1)
 		if err != nil {
 			return nil, err
 		}
-		origBytes = append(origBytes, lastByte)
-		if err := finishBlock(cipher, 1); err != nil {
+
+		// undo the bit flip if we did one earlier
+		if extraFlip {
+			origByte ^= 255
+		}
+
+		out = append(out, origByte)
+	}
+
+	return out, nil
+}
+
+// solveC17Puzzle finds the original cleartext solution only given the ciphertext and iv
+func (c c17crypter) solvePuzzle(cipher, iv []byte) ([]byte, error) {
+	finalSize := len(cipher)
+
+	// prepend the iv to the ciphertext
+	cipher = append(iv, cipher...)
+
+	var origBytes []byte
+	for len(origBytes) < finalSize {
+		// make a copy of the truncated ciphertext
+		toCopy := len(cipher) - len(origBytes)
+		enc := make([]byte, toCopy)
+		copy(enc, cipher[:toCopy])
+
+		// solve the block
+		clear, err := c.solveLastBlock(enc)
+		if err != nil {
 			return nil, err
 		}
+		origBytes = append(origBytes, clear...)
 	}
 
 	ReverseInPlace(origBytes)
@@ -211,7 +164,7 @@ func TestS3C17(t *testing.T) {
 			break
 		}
 
-		solved, err := solveC17Puzzle(c, cipher, iv)
+		solved, err := c.solvePuzzle(cipher, iv)
 		if err != nil {
 			t.Errorf("failed to solve puzzle %d, solvePuzzle encountered error %v\n", i, err)
 			break
@@ -219,8 +172,6 @@ func TestS3C17(t *testing.T) {
 
 		if !bytes.Equal(padded, solved) {
 			t.Errorf("failed to solve puzzle %d, bytes don't match", i)
-			PrintChunks("ORIG: ", padded)
-			PrintChunks("SOLV: ", solved)
 			break
 		}
 	}
