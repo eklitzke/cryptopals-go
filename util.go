@@ -61,7 +61,7 @@ func DecodeBase64String(t *testing.T, s string) []byte {
 }
 
 func DecodeBase64Lines(t *testing.T, fileName string) [][]byte {
-	b, err := ioutil.ReadFile("challenge-data/17.txt")
+	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		t.Error(err)
 	}

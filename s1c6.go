@@ -109,7 +109,7 @@ func (s byError) Less(i, j int) bool { return s[i].error < s[j].error }
 
 func BreakRepeatingKeyXOR(s []byte, opts BreakOpts) ([]byte, string, error) {
 	opts = opts.fillDefaults()
-	var candidates []keyCandidate
+	candidates := []keyCandidate{}
 	for keySize := opts.minKey; keySize <= opts.maxKey; keySize++ {
 		dist, err := getKeySizeError(s, keySize)
 		if err != nil {
@@ -118,7 +118,11 @@ func BreakRepeatingKeyXOR(s []byte, opts BreakOpts) ([]byte, string, error) {
 		candidates = append(candidates, keyCandidate{keyLen: keySize, error: dist})
 	}
 	sort.Sort(byError(candidates))
-	candidates = candidates[:opts.search]
+	end := opts.search
+	if end > len(candidates) {
+		end = len(candidates)
+	}
+	candidates = candidates[:end]
 	bestError := math.MaxFloat64
 	var bestKey []byte
 

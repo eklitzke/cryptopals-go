@@ -97,16 +97,16 @@ func solveSingleByteXor(data []byte) (key byte, diff float64, plaintext string, 
 
 outer:
 	for i := 0; i < 256; i++ {
-		out := []rune{}
+		out := make([]byte, len(data))
 		key = byte(i)
-		for _, r := range data {
-			outr := rune(key ^ r)
-			if !unicode.IsPrint(outr) && !unicode.IsSpace(outr) {
+		for j, c := range data {
+			r := rune(key ^ c)
+			if !unicode.IsPrint(r) && !unicode.IsSpace(r) {
 				// shortcut if the output produces non-printable
 				// characters
 				continue outer
 			}
-			out = append(out, outr)
+			out[j] = byte(key ^ c)
 		}
 		plain := string(out)
 		freqs := getRuneFrequencies(plain)
