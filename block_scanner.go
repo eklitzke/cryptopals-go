@@ -15,8 +15,6 @@
 
 package cryptopals
 
-import "fmt"
-
 // BlockScanner is a scanner that reads fixed size blocks from an input buffer.
 type BlockScanner struct {
 	data      []byte // the original buffer
@@ -30,7 +28,11 @@ func (s *BlockScanner) Scan() bool {
 	if s.offset >= len(s.data) {
 		return false
 	}
-	s.block = s.data[s.offset : s.offset+s.blockSize]
+	if s.offset+s.blockSize <= len(s.data) {
+		s.block = s.data[s.offset : s.offset+s.blockSize]
+	} else {
+		s.block = s.data[s.offset:]
+	}
 	s.offset += s.blockSize
 	return true
 }
@@ -42,9 +44,6 @@ func (s *BlockScanner) Bytes() []byte {
 
 // NewBlockScanner creates a new BlockScanner.
 func NewBlockScanner(data []byte, blockSize int) (*BlockScanner, error) {
-	if len(data)%blockSize != 0 {
-		return nil, fmt.Errorf("failed to create NewBlockScanner, input size %d not aligned to blockSize %d", len(data), blockSize)
-	}
 	return &BlockScanner{
 		data:      data,
 		blockSize: blockSize,

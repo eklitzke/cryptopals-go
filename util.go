@@ -60,6 +60,22 @@ func DecodeBase64String(t *testing.T, s string) []byte {
 	return data
 }
 
+func DecodeBase64Lines(t *testing.T, fileName string) [][]byte {
+	b, err := ioutil.ReadFile("challenge-data/17.txt")
+	if err != nil {
+		t.Error(err)
+	}
+
+	lines := strings.Split(string(b), "\n")
+	lines = lines[:len(lines)-1]
+
+	out := make([][]byte, len(lines))
+	for i, line := range lines {
+		out[i] = DecodeBase64String(t, line)
+	}
+	return out
+}
+
 // Generate a buffer with random bytes.
 func RandomBytes(size int) []byte {
 	buf := make([]byte, size)

@@ -18,8 +18,6 @@ package cryptopals
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"strings"
 	"testing"
 )
 
@@ -159,22 +157,13 @@ func (c c17crypter) solvePuzzle(cipher, iv []byte) ([]byte, error) {
 }
 
 func TestS3C17(t *testing.T) {
-	b, err := ioutil.ReadFile("challenge-data/17.txt")
-	if err != nil {
-		t.Error(err)
-	}
-
 	c := c17crypter{key: AESRandomBytes(), iv: AESRandomBytes()}
 
-	lines := strings.Split(string(b), "\n")
-	lines = lines[:len(lines)-1]
+	lines := DecodeBase64Lines(t, "challenge-data/17.txt")
 
 	// decode the puzzle, and pad all of the lines
 	for i, line := range lines {
-		raw := DecodeBase64String(t, line)
-
-		// pad the input
-		padded := PadPKCS7(raw, AESBlockSize)
+		padded := PadPKCS7(line, AESBlockSize)
 
 		// encrypt the cleartext
 		cipher, iv, err := c.encrypt(padded)
