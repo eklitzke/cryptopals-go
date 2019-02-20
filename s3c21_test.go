@@ -27,6 +27,9 @@ func TestC321(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	if w := m.WordSize(); w != 32 {
+		t.Errorf("got %d WordSize, but expected 32", w)
+	}
 
 	const expect32_1 = 3510057789
 	if n := m.Next(); n != expect32_1 {
@@ -44,6 +47,9 @@ func TestC321(t *testing.T) {
 	m, err = mt19937.NewMT19937(opts)
 	if err != nil {
 		t.Error(err)
+	}
+	if w := m.WordSize(); w != 64 {
+		t.Errorf("got %d WordSize, but expected 64", w)
 	}
 
 	const expect64_1 = 14514284786278117030

@@ -15,19 +15,29 @@
 
 package mt19937
 
-const (
-	// default seed, same as in the reference C code
-	defaultSeed = 5489
-)
+const defaultSeed = 5489 // same as in the reference C code
 
-// Opts gets the twister options
+// Opts holds the constants and seed for a MT19937 PRNG instance.
+//
+// All members are private, but an Opts with a new seed can be created using the
+// Seed() method.
 type Opts struct {
 	c    twisterConsts // constants
-	Seed uint          // default seed
+	seed uint          // default seed
 }
 
-// options for a 32-bit Mersenne twister
-var Opts32 = Opts{c: twister32Consts, Seed: defaultSeed}
+// Seed creates a new option struct with the given seed.
+func (o Opts) Seed(seed uint) Opts {
+	return Opts{c: o.c, seed: seed}
+}
 
-// options for a 64-bit Mersenne twister
-var Opts64 = Opts{c: twister64Consts, Seed: defaultSeed}
+// WordSize gets the word size for the options.
+func (o Opts) WordSize() uint {
+	return o.c.w
+}
+
+// Options for a 32-bit Mersenne twister.
+var Opts32 = Opts{c: twister32Consts, seed: defaultSeed}
+
+// Options for a 64-bit Mersenne twister.
+var Opts64 = Opts{c: twister64Consts, seed: defaultSeed}

@@ -30,39 +30,36 @@ type MT19937 struct {
 	upperMask uint          // mask
 }
 
-// error returned when invalid options are specified
-var invalidOpts = errors.New("invalid MT19937 options (no word size set)")
+// ErrInvalidOpts is returned when invalid options are specified.
+var ErrInvalidOpts = errors.New("invalid MT19937 options (no word size set)")
 
-// error returned when an invalid seed is used
-var invalidSeed = errors.New("invalid MT19937 seed")
-
-// NewMT19937 creates a new MT19937 twister given a set of opts. Valid options
-// are Opts32 and Opts64.
+// NewMT19937 creates a new MT19937 twister given Opts.
+//
+// Opts should be created from Opts32 or Opts64. The default values of those
+// variables are valid options using the same default seed as the reference C
+// implementation. To use a different seed, create a new copy of Opts using the
+// Seed() method on Opts32 or Opts64.
 func NewMT19937(opts Opts) (*MT19937, error) {
-	if opts.c.w == 0 {
-		return nil, invalidOpts
+	c := opts.c
+	if c.w == 0 {
+		return nil, ErrInvalidOpts
 	}
-	if opts.Seed == 0 {
-		return nil, invalidSeed
-	}
-
-	lower_mask := uint((1 << opts.c.r) - 1)
+	lower := uint((1 << c.r) - 1)
 	m := &MT19937{
-		c:         opts.c,
-		state:     make([]uint, opts.c.n),
-		index:     opts.c.n + 1,
-		lowerMask: lower_mask,
-		upperMask: opts.c.mask(^lower_mask),
+		c:         c,
+		state:     make([]uint, c.n),
+		index:     c.n + 1,
+		lowerMask: lower,
+		upperMask: c.mask(^lower),
 	}
-
-	// seed the twister
-	m.Seed(opts.Seed)
+	m.Seed(opts.seed)
 	return m, nil
 }
 
-// Seed initializes the generator based on a seed. This is called automatically
-// by NewMT19937(), but you can also explicitly re-seed the generator using this
-// method.
+// Seed initializes the generator based on a seed.
+//
+// This is called automatically by NewMT19937(), but you can also explicitly
+// re-seed the generator using this method.
 func (m *MT19937) Seed(seed uint) {
 	c := m.c
 	m.index = c.n
@@ -73,8 +70,11 @@ func (m *MT19937) Seed(seed uint) {
 	}
 }
 
-// Extract a tempered value based on m.state[index], calling twist() every n
-// numbers.
+// Next gets the next random number from the PRNG. The output number will be a
+// uint with at most WordSize() bits set (either 32 or 64 bits).
+//
+// Internally this extracts a tempered value based on m.state[index], calling
+// twist() every n numbers.
 func (m *MT19937) Next() uint {
 	c := m.c
 	if m.index >= c.n {
@@ -95,14 +95,19 @@ func (m *MT19937) Next() uint {
 // Twist the internal state of the generator.
 func (m *MT19937) twist() {
 	c := m.c
-	var i uint
+	var i, x, xA uint
 	for i = 0; i < c.n; i++ {
-		x := uint((m.state[i] & m.upperMask) + (m.state[(i+1)%c.n] & m.lowerMask))
-		xA := x >> 1
+		x = (m.state[i] & m.upperMask) + (m.state[(i+1)%c.n] & m.lowerMask)
+		xA = x >> 1
 		if (x & 1) == 1 {
 			xA ^= c.a
 		}
 		m.state[i] = m.state[(i+c.m)%c.n] ^ xA
 	}
 	m.index = 0
+}
+
+// WordSize gets the word size of the PRNG (will return 32 or 64).
+func (m *MT19937) WordSize() uint {
+	return m.c.w
 }
