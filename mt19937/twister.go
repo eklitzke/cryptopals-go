@@ -17,19 +17,27 @@ package mt19937
 
 import "errors"
 
+// MT19937 implements the MT19937 "Mersenne Twister" PRNG, see
+// https://en.wikipedia.org/wiki/Mersenne_Twister for details.
+//
+// This struct can be used for either a 32-bit twister, or a 64-bit twister. Use
+// NewMT19937 to initialize a new instance of the PRNG.
 type MT19937 struct {
-	c          twisterConsts // twister constants
-	wbits      uint          // mask for w lowest bits
-	state      []uint        // state of the generator
-	index      uint          // index into the generator
-	lower_mask uint          // mask
-	upper_mask uint          // mask
+	c         twisterConsts // twister constants
+	state     []uint        // state of the generator
+	index     uint          // index into the generator
+	lowerMask uint          // mask
+	upperMask uint          // mask
 }
 
+// error returned when invalid options are specified
 var invalidOpts = errors.New("invalid MT19937 options (no word size set)")
 
+// error returned when an invalid seed is used
 var invalidSeed = errors.New("invalid MT19937 seed")
 
+// NewMT19937 creates a new MT19937 twister given a set of opts. Valid options
+// are Opts32 and Opts64.
 func NewMT19937(opts Opts) (*MT19937, error) {
 	if opts.c.w == 0 {
 		return nil, invalidOpts
@@ -37,50 +45,37 @@ func NewMT19937(opts Opts) (*MT19937, error) {
 	if opts.Seed == 0 {
 		return nil, invalidSeed
 	}
+
+	lower_mask := uint((1 << opts.c.r) - 1)
 	m := &MT19937{
-		c:          opts.c,
-		state:      make([]uint, opts.c.n),
-		index:      opts.c.n + 1,
-		lower_mask: uint((1 << opts.c.r) - 1),
-		wbits:      1,
+		c:         opts.c,
+		state:     make([]uint, opts.c.n),
+		index:     opts.c.n + 1,
+		lowerMask: lower_mask,
+		upperMask: opts.c.mask(^lower_mask),
 	}
-
-	// generate the wbits mask
-	var i, lowmask uint
-	lowmask = 1
-	for i = 1; i < opts.c.w; i++ {
-		lowmask <<= 1
-		m.wbits |= lowmask
-	}
-
-	// set the upper mask
-	m.upper_mask = m.getLowBits(^m.lower_mask)
 
 	// seed the twister
 	m.Seed(opts.Seed)
-
 	return m, nil
 }
 
-// get the w lowest bits from x
-func (m *MT19937) getLowBits(x uint) uint {
-	return x & m.wbits
-}
-
-// initialize the generator from a seed
+// Seed initializes the generator based on a seed. This is called automatically
+// by NewMT19937(), but you can also explicitly re-seed the generator using this
+// method.
 func (m *MT19937) Seed(seed uint) {
 	c := m.c
 	m.index = c.n
 	m.state[0] = seed
 	var i uint
 	for i = 1; i < c.n; i++ {
-		m.state[i] = m.getLowBits(c.f*(m.state[i-1]^(m.state[i-1]>>(c.w-2))) + i)
+		m.state[i] = c.mask(c.f*(m.state[i-1]^(m.state[i-1]>>(c.w-2))) + i)
 	}
 }
 
 // Extract a tempered value based on m.state[index], calling twist() every n
 // numbers.
-func (m *MT19937) extractNumber() uint {
+func (m *MT19937) Next() uint {
 	c := m.c
 	if m.index >= c.n {
 		if m.index > c.n {
@@ -88,22 +83,21 @@ func (m *MT19937) extractNumber() uint {
 		}
 		m.twist()
 	}
-
 	y := m.state[m.index]
 	y ^= ((y >> c.u) & c.d)
 	y ^= ((y << c.s) & c.b)
 	y ^= ((y << c.t) & c.c)
 	y ^= (y >> c.l)
-
 	m.index++
-	return m.getLowBits(y)
+	return c.mask(y)
 }
 
+// Twist the internal state of the generator.
 func (m *MT19937) twist() {
 	c := m.c
 	var i uint
 	for i = 0; i < c.n; i++ {
-		x := uint((m.state[i] & m.upper_mask) + (m.state[(i+1)%c.n] & m.lower_mask))
+		x := uint((m.state[i] & m.upperMask) + (m.state[(i+1)%c.n] & m.lowerMask))
 		xA := x >> 1
 		if (x & 1) == 1 {
 			xA ^= c.a
@@ -111,9 +105,4 @@ func (m *MT19937) twist() {
 		m.state[i] = m.state[(i+c.m)%c.n] ^ xA
 	}
 	m.index = 0
-}
-
-// Next gets the next number from the twister.
-func (m *MT19937) Next() uint {
-	return m.extractNumber()
 }
